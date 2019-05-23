@@ -29,61 +29,78 @@ namespace NineMensMorrisView
 
         #endregion
 
-        private int _player1Type;
-        private int _player2Type;
-
+        
         private Random _rnd;
         private GameController _controller;
         //private Tile _selectedTile = null;
-        private Node _selectedNode = null;
-        private int _isMorrice = 0;
+        //private Node _selectedNode = null;
+        //private int _isMorrice = 0;
 
-        public GamePage(int player1, int player2)
+        public GamePage(Dictionary<string, int> valuesContainer)
         {
             InitializeComponent();
-
             _rnd = new Random();
-            _player1Type = player1;
-            _player2Type = player2;
-            _controller = new GameController();
+            
+            _controller = new GameController(valuesContainer, SetIconsToMap());
             SetUpTilesToController();
             SetUpNodeGraphicToController();
-            StartGame();
             DataContextBinding();
+            _controller.UpdateGraphicTurnController();
+        }
 
+        private Dictionary<String, Object> SetIconsToMap()
+        {
+            Dictionary<String, Object> shapes = new Dictionary<string, Object>();
+            shapes.Add("RectangleLeft", MoveTurnL_Rectangle);
+            shapes.Add("RectangleRight", MoveTurnR_Rectangle);
+            shapes.Add("GamePlan", this);
+
+            return shapes;
         }
 
         private void DataContextBinding()
         {
-            FieldA1_Border.DataContext = _controller.GameStatus.Board.Board.ElementAt(0);
+            FieldA1_Border.DataContext = _controller.PresentGameState.Board.Board.ElementAt(0);
         }
+        
 
-        public void StartGame()
-        {
-            CheckTurn();
+        //public int CheckTurn()
+        //{
+        //    switch (_controller.GameStatus.Turn)
+        //    {
+        //        case Player.PlayerOne:
+        //            MoveTurnL_Rectangle.Fill = GlobalValues.BRUSH_WHITE;
+        //            MoveTurnR_Rectangle.Fill = GlobalValues.BRUSH_WHITE;
+        //            return 1;
+        //        case Player.PlayerTwo:
+        //            MoveTurnL_Rectangle.Fill = GlobalValues.BRUSH_BLACK;
+        //            MoveTurnR_Rectangle.Fill = GlobalValues.BRUSH_BLACK;
+        //            return 2;
+        //        default:
+        //            MoveTurnL_Rectangle.Fill = GlobalValues.BRUSH_EMPTY;
+        //            MoveTurnR_Rectangle.Fill = GlobalValues.BRUSH_EMPTY;
+        //            return 0;
+        //    }
+        //}
 
-        }
-
-        public int CheckTurn()
-        {
-            switch (_controller.Turn)
-            {
-                case Player.PlayerOne:
-                    MoveTurnL_Rectangle.Fill = GlobalValues.BRUSH_WHITE;
-                    MoveTurnR_Rectangle.Fill = GlobalValues.BRUSH_WHITE;
-                    return 1;
-                case Player.PlayerTwo:
-                    MoveTurnL_Rectangle.Fill = GlobalValues.BRUSH_BLACK;
-                    MoveTurnR_Rectangle.Fill = GlobalValues.BRUSH_BLACK;
-                    return 2;
-                default:
-                    MoveTurnL_Rectangle.Fill = GlobalValues.BRUSH_EMPTY;
-                    MoveTurnR_Rectangle.Fill = GlobalValues.BRUSH_EMPTY;
-                    return 0;
-            }
-
-
-        }
+        //public void CheckTurnGraphic(int turnValue)
+        //{
+        //    switch (turnValue)
+        //    {
+        //        case 1:
+        //            MoveTurnL_Rectangle.Fill = GlobalValues.BRUSH_WHITE;
+        //            MoveTurnR_Rectangle.Fill = GlobalValues.BRUSH_WHITE;
+        //            break;
+        //        case 2:
+        //            MoveTurnL_Rectangle.Fill = GlobalValues.BRUSH_BLACK;
+        //            MoveTurnR_Rectangle.Fill = GlobalValues.BRUSH_BLACK;
+        //            break;
+        //        default:
+        //            MoveTurnL_Rectangle.Fill = GlobalValues.BRUSH_EMPTY;
+        //            MoveTurnR_Rectangle.Fill = GlobalValues.BRUSH_EMPTY;
+        //            break;
+        //    }
+        //}
 
         private void SetUpNodeGraphicToController()
         {
@@ -120,7 +137,7 @@ namespace NineMensMorrisView
             for (int i = 0; i < nodes.Count; i++)
             {
                 //nodes.ElementAt(i).Name.Contains(_controller.GameStateO.Board.Board.ElementAt(i))
-                _controller.GameStatus.Board.Board.ElementAt(i).GraphicRepresentation = nodes.ElementAt(i);
+                _controller.PresentGameState.Board.Board.ElementAt(i).GraphicRepresentation = nodes.ElementAt(i);
             }
 
         }
@@ -151,11 +168,11 @@ namespace NineMensMorrisView
 
             for (int i = 0; i < p1Tiles.Count; i++)
             {
-                _controller.GameStatus.PlayerOneInitSet[i].Graphic = p1Tiles[i];
-                _controller.GameStatus.PlayerTwoInitSet[i].Graphic = p2Tiles[i];
+                _controller.PresentGameState.PlayerOneInitSet[i].Graphic = p1Tiles[i];
+                _controller.PresentGameState.PlayerTwoInitSet[i].Graphic = p2Tiles[i];
 
-                Console.WriteLine(_controller.GameStatus.PlayerOneInitSet[i]);
-                Console.WriteLine(_controller.GameStatus.PlayerTwoInitSet[i]);
+                Console.WriteLine(_controller.PresentGameState.PlayerOneInitSet[i]);
+                Console.WriteLine(_controller.PresentGameState.PlayerTwoInitSet[i]);
 
             }
 
@@ -163,325 +180,307 @@ namespace NineMensMorrisView
         }
 
 
-        //private void ChangeNodeColor(Border node)
-        //{
-
-        //    if (node.Background == BRUSH_EMPTY)
-        //    {
-        //        if (_controller.Turn == Player.PlayerOne)
-        //        {
-        //            //node.Background = new SolidColorBrush(Colors.Red);
-        //            node.Background = BRUSH_WHITE;
-        //            _controller.Turn = Player.PlayerTwo;
-        //        }
-        //        else if (_controller.Turn == Player.PlayerTwo)
-        //        {
-        //            node.Background = BRUSH_BLACK;
-        //            _controller.Turn = Player.PlayerOne;
-        //        }
-
-        //    }
-        //    else if (node.Background == BRUSH_BLACK || node.Background == BRUSH_WHITE)
-        //    {
-        //        node.Background = BRUSH_EMPTY;
-        //    }
-
-
-        //}
-
         private void ClickOnNode(Border nodeBorder)
         {
-            if (_isMorrice > 0)
-            {
-                Node nodeWithTileToRemove = FindNodeByNodeBorder(nodeBorder);
-                if (_controller.Turn != nodeWithTileToRemove.TileOn.Owner)
-                {
-                    _controller.RemoveTile(nodeWithTileToRemove);
-                    _isMorrice--;
-                    CheckAfterRemove();
-                }
+            Node chosenNode = FindNodeByNodeBorder(nodeBorder);
+            _controller.TheGamePlay(chosenNode);
 
-            }
-            else if (_controller.GameStatus.PlayerOneInitSet.Any() || _controller.GameStatus.PlayerTwoInitSet.Any())
-            {
-                foreach (Node n in _controller.GameStatus.Board.Board)
-                {
-                    if (n.TileOn == null && nodeBorder.Name.Contains(n.Id))
-                    {
-                        if (_controller.Turn == Player.PlayerOne)
-                        {
-                            n.TileOn = _controller.GameStatus.PlayerOneInitSet.Last();
-                            _controller.GameStatus.PlayerOneInitSet.Remove(_controller.GameStatus.PlayerOneInitSet.Last());
-                            n.TileOn.Graphic.Visibility = Visibility.Hidden;
-                            n.GraphicRepresentation.Background = n.TileOn.Graphic.Fill;
-                            n.TileOn.Graphic.SetValue(Canvas.LeftProperty, nodeBorder.GetValue(Canvas.LeftProperty));
-                            n.TileOn.Graphic.SetValue(Canvas.RightProperty, nodeBorder.GetValue(Canvas.RightProperty));
-                            n.TileOn.Graphic.SetValue(Canvas.TopProperty, nodeBorder.GetValue(Canvas.TopProperty));
-                            n.TileOn.Graphic.SetValue(Canvas.BottomProperty, nodeBorder.GetValue(Canvas.BottomProperty));
-                            CheckAfterSet(n);
-                        }
-                        else if (_controller.Turn == Player.PlayerTwo)
-                        {
-                            n.TileOn = _controller.GameStatus.PlayerTwoInitSet.Last();
-                            _controller.GameStatus.PlayerTwoInitSet.Remove(_controller.GameStatus.PlayerTwoInitSet.Last());
-                            n.TileOn.Graphic.Visibility = Visibility.Hidden;
-                            n.GraphicRepresentation.Background = n.TileOn.Graphic.Fill;
-                            n.TileOn.Graphic.SetValue(Canvas.LeftProperty, nodeBorder.GetValue(Canvas.LeftProperty));
-                            n.TileOn.Graphic.SetValue(Canvas.RightProperty, nodeBorder.GetValue(Canvas.RightProperty));
-                            n.TileOn.Graphic.SetValue(Canvas.TopProperty, nodeBorder.GetValue(Canvas.TopProperty));
-                            n.TileOn.Graphic.SetValue(Canvas.BottomProperty, nodeBorder.GetValue(Canvas.BottomProperty));
-                            CheckAfterSet(n);
-                        }
-                    }
-                }
-            }
-            else if (_controller.GameStatus.PlayerOneGoals.Count < 6 && _controller.GameStatus.PlayerTwoGoals.Count < 6)
-            {
+            #region OldCode
+            //if (_controller.GameStatus.IsMorrice > 0)
+            //{
+            //    Node nodeWithTileToRemove = FindNodeByNodeBorder(nodeBorder);
+            //    if (_controller.Turn != nodeWithTileToRemove.TileOn.Owner)
+            //    {
+            //        _controller.RemoveTile(nodeWithTileToRemove);
+            //        _isMorrice--;
+            //        CheckAfterRemove();
+            //    }
 
-                Console.WriteLine("Before: {0}", _selectedNode);
-                if ((CheckTurn() == 1 && nodeBorder.Background == GlobalValues.BRUSH_WHITE)
-                    || (CheckTurn() == 2 && nodeBorder.Background == GlobalValues.BRUSH_BLACK)
-                    || (_selectedNode != null && nodeBorder.Background == GlobalValues.BRUSH_EMPTY))
-                {
-                    Node clickedNode = FindNodeByNodeBorder(nodeBorder);
-                    if (_selectedNode == null && clickedNode.TileOn != null)
-                    {
-                        //_selectedTile = n.TileOn;
-                        _selectedNode = clickedNode;
-                        _selectedNode.TileOn.LastNode = clickedNode;
-                        _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_YELLOW;
-                    }
-                    else if (_selectedNode != null && clickedNode.TileOn == null)
-                    {
-                        //n.TileOn = _selectedTile;
-                        if (_selectedNode.IsConneced(clickedNode))
-                        {
-                            clickedNode.TileOn = _selectedNode.TileOn;
-                            clickedNode.GraphicRepresentation.Background = clickedNode.TileOn.Graphic.Fill;
-                            _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
-                            //_selectedTile = null;
-                            _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
-                            _selectedNode.TileOn = null;
-                            _selectedNode = null;
-                            CheckAfterSet(clickedNode);
-                        }
+            //}
+            //else if (_controller.GameStatus.PlayerOneInitSet.Any() || _controller.GameStatus.PlayerTwoInitSet.Any())
+            //{
+            //    foreach (Node n in _controller.GameStatus.Board.Board)
+            //    {
+            //        if (n.TileOn == null && nodeBorder.Name.Contains(n.Id))
+            //        {
+            //            if (_controller.Turn == Player.PlayerOne)
+            //            {
+            //                n.TileOn = _controller.GameStatus.PlayerOneInitSet.Last();
+            //                _controller.GameStatus.PlayerOneInitSet.Remove(_controller.GameStatus.PlayerOneInitSet.Last());
+            //                n.TileOn.Graphic.Visibility = Visibility.Hidden;
+            //                n.GraphicRepresentation.Background = n.TileOn.Graphic.Fill;
+            //                n.TileOn.Graphic.SetValue(Canvas.LeftProperty, nodeBorder.GetValue(Canvas.LeftProperty));
+            //                n.TileOn.Graphic.SetValue(Canvas.RightProperty, nodeBorder.GetValue(Canvas.RightProperty));
+            //                n.TileOn.Graphic.SetValue(Canvas.TopProperty, nodeBorder.GetValue(Canvas.TopProperty));
+            //                n.TileOn.Graphic.SetValue(Canvas.BottomProperty, nodeBorder.GetValue(Canvas.BottomProperty));
+            //                CheckAfterSet(n);
+            //            }
+            //            else if (_controller.Turn == Player.PlayerTwo)
+            //            {
+            //                n.TileOn = _controller.GameStatus.PlayerTwoInitSet.Last();
+            //                _controller.GameStatus.PlayerTwoInitSet.Remove(_controller.GameStatus.PlayerTwoInitSet.Last());
+            //                n.TileOn.Graphic.Visibility = Visibility.Hidden;
+            //                n.GraphicRepresentation.Background = n.TileOn.Graphic.Fill;
+            //                n.TileOn.Graphic.SetValue(Canvas.LeftProperty, nodeBorder.GetValue(Canvas.LeftProperty));
+            //                n.TileOn.Graphic.SetValue(Canvas.RightProperty, nodeBorder.GetValue(Canvas.RightProperty));
+            //                n.TileOn.Graphic.SetValue(Canvas.TopProperty, nodeBorder.GetValue(Canvas.TopProperty));
+            //                n.TileOn.Graphic.SetValue(Canvas.BottomProperty, nodeBorder.GetValue(Canvas.BottomProperty));
+            //                CheckAfterSet(n);
+            //            }
+            //        }
+            //    }
+            //}
+            //else if (_controller.GameStatus.PlayerOneGoals.Count < 6 && _controller.GameStatus.PlayerTwoGoals.Count < 6)
+            //{
 
-                    }
+            //    Console.WriteLine("Before: {0}", _selectedNode);
+            //    if ((CheckTurn() == 1 && nodeBorder.Background == GlobalValues.BRUSH_WHITE)
+            //        || (CheckTurn() == 2 && nodeBorder.Background == GlobalValues.BRUSH_BLACK)
+            //        || (_selectedNode != null && nodeBorder.Background == GlobalValues.BRUSH_EMPTY))
+            //    {
+            //        Node clickedNode = FindNodeByNodeBorder(nodeBorder);
+            //        if (_selectedNode == null && clickedNode.TileOn != null)
+            //        {
+            //            //_selectedTile = n.TileOn;
+            //            _selectedNode = clickedNode;
+            //            _selectedNode.TileOn.LastNode = clickedNode;
+            //            _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_YELLOW;
+            //        }
+            //        else if (_selectedNode != null && clickedNode.TileOn == null)
+            //        {
+            //            //n.TileOn = _selectedTile;
+            //            if (_selectedNode.IsConneced(clickedNode))
+            //            {
+            //                clickedNode.TileOn = _selectedNode.TileOn;
+            //                clickedNode.GraphicRepresentation.Background = clickedNode.TileOn.Graphic.Fill;
+            //                _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
+            //                //_selectedTile = null;
+            //                _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+            //                _selectedNode.TileOn = null;
+            //                _selectedNode = null;
+            //                CheckAfterSet(clickedNode);
+            //            }
 
-                    else if (_selectedNode == clickedNode)
-                    {
-                        _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
-                        _selectedNode = null;
+            //        }
 
-                    }
+            //        else if (_selectedNode == clickedNode)
+            //        {
+            //            _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+            //            _selectedNode = null;
 
-                    #region OLD CODE
-                    //foreach (Node n in _controller.GameStatus.Board.Board)
-                    //{
-                    //    if (n.GraphicRepresentation == nodeBorder && _selectedNode == null && n.TileOn != null)
-                    //    {
-                    //        //_selectedTile = n.TileOn;
-                    //        _selectedNode = n;
-                    //        _selectedNode.TileOn.LastNode = n;
-                    //        _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_YELLOW;
-                    //    }
-                    //    else if (n.GraphicRepresentation == nodeBorder && _selectedNode != null && n.TileOn == null )
-                    //    {
-                    //        //n.TileOn = _selectedTile;
-                    //        if (_selectedNode.IsConneced(n))
-                    //        {
-                    //            n.TileOn = _selectedNode.TileOn;
-                    //            n.GraphicRepresentation.Background = n.TileOn.Graphic.Fill;
-                    //            _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
-                    //            //_selectedTile = null;
-                    //            _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
-                    //            _selectedNode.TileOn = null;
-                    //            _selectedNode = null;
-                    //            CheckAfterSet(n);
-                    //        }
+            //        }
 
-                    //    }
+            //        #region OLD CODE
+            //        //foreach (Node n in _controller.GameStatus.Board.Board)
+            //        //{
+            //        //    if (n.GraphicRepresentation == nodeBorder && _selectedNode == null && n.TileOn != null)
+            //        //    {
+            //        //        //_selectedTile = n.TileOn;
+            //        //        _selectedNode = n;
+            //        //        _selectedNode.TileOn.LastNode = n;
+            //        //        _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_YELLOW;
+            //        //    }
+            //        //    else if (n.GraphicRepresentation == nodeBorder && _selectedNode != null && n.TileOn == null )
+            //        //    {
+            //        //        //n.TileOn = _selectedTile;
+            //        //        if (_selectedNode.IsConneced(n))
+            //        //        {
+            //        //            n.TileOn = _selectedNode.TileOn;
+            //        //            n.GraphicRepresentation.Background = n.TileOn.Graphic.Fill;
+            //        //            _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
+            //        //            //_selectedTile = null;
+            //        //            _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+            //        //            _selectedNode.TileOn = null;
+            //        //            _selectedNode = null;
+            //        //            CheckAfterSet(n);
+            //        //        }
 
-                    //    else if (n.GraphicRepresentation == nodeBorder && _selectedNode == n)
-                    //    {
-                    //        _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
-                    //        _selectedNode = null;
+            //        //    }
 
-                    //    }
-                    //}
-                    #endregion
+            //        //    else if (n.GraphicRepresentation == nodeBorder && _selectedNode == n)
+            //        //    {
+            //        //        _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+            //        //        _selectedNode = null;
 
-                }
-                Console.WriteLine("After: {0}", _selectedNode);
+            //        //    }
+            //        //}
+            //        #endregion
 
-            }
-            else if (_controller.GameStatus.PlayerOneGoals.Count == 6 || _controller.GameStatus.PlayerTwoGoals.Count == 6)
-            {
+            //    }
+            //    Console.WriteLine("After: {0}", _selectedNode);
 
-                Fly(nodeBorder);
-                //if (_controller.GameStatus.PlayerOneGoals.Count >= 6) // PlayerTwo is flying
-                //{
-                //    Fly(nodeBorder);
-                //}
-                //else if (_controller.GameStatus.PlayerTwoGoals.Count >= 6) // PlayerOne is flying
-                //{
-                //    Fly(nodeBorder);
-                //}
+            //}
+            //else if (_controller.GameStatus.PlayerOneGoals.Count == 6 || _controller.GameStatus.PlayerTwoGoals.Count == 6)
+            //{
 
-            }
+            //    Fly(nodeBorder);
+            //    //if (_controller.GameStatus.PlayerOneGoals.Count >= 6) // PlayerTwo is flying
+            //    //{
+            //    //    Fly(nodeBorder);
+            //    //}
+            //    //else if (_controller.GameStatus.PlayerTwoGoals.Count >= 6) // PlayerOne is flying
+            //    //{
+            //    //    Fly(nodeBorder);
+            //    //}
+
+            //}
+
+            #endregion
 
         }
 
         private Node FindNodeByNodeBorder(Border nodeBorder)
         {
-            return _controller.GameStatus.Board.Board.First(n => n.GraphicRepresentation == nodeBorder);
+            return _controller.PresentGameState.Board.Board.First(n => n.GraphicRepresentation == nodeBorder);
         }
 
-        private void CheckAfterSet(Node node)
-        {
-            _isMorrice = _controller.GameStatus.CheckIfMorriceOnLastMove(node);
-            //_controller.GameStateO.CheckBoard();
-            if (_isMorrice <= 0)
-            {
-                _controller.ChangeTurn();
-            }
-            CheckTurn();
 
-        }
+        //private void CheckAfterSet(Node node)
+        //{
+        //    _controller.GameStatus.IsMorrice = _controller.GameStatus.CheckIfMorriceOnLastMove(node);
+        //    //_controller.GameStateO.CheckBoard();
+        //    if (_controller.GameStatus.IsMorrice <= 0)
+        //    {
+        //        _controller.ChangeTurn();
+        //    }
+        //    _controller.CheckTurnController();
+        //}
 
-        private void CheckAfterRemove()
-        {
-            if ( _controller.GameStatus.PlayerOneGoals.Count > 6)
-            {
-                NavigationService.Navigate(new WinPage(Player.PlayerOne));
-            }
-            else if (_controller.GameStatus.PlayerTwoGoals.Count > 6)
-            {
-                NavigationService.Navigate(new WinPage(Player.PlayerTwo));
-            }
-            else 
-            {
-                if (_isMorrice <= 0)
-                {
-                    _controller.ChangeTurn();
-                    CheckTurn();
-                }
-            }
-        }
+        //private void CheckAfterRemove()
+        //{
+        //    if ( _controller.GameStatus.PlayerOneGoals.Count > 6)
+        //    {
+        //        NavigationService.Navigate(new WinPage(Player.PlayerOne));
+        //    }
+        //    else if (_controller.GameStatus.PlayerTwoGoals.Count > 6)
+        //    {
+        //        NavigationService.Navigate(new WinPage(Player.PlayerTwo));
+        //    }
+        //    else 
+        //    {
+        //        if (_controller.GameStatus.IsMorrice <= 0)
+        //        {
+        //            _controller.ChangeTurn();
+        //            _controller.CheckTurnController();
+        //        }
+        //    }
+        //}
 
-        private void Walk(Border nodeBorder)
-        {
-            if ((CheckTurn() == 1 && nodeBorder.Background == GlobalValues.BRUSH_WHITE)
-                    || (CheckTurn() == 2 && nodeBorder.Background == GlobalValues.BRUSH_BLACK)
-                    || (_selectedNode != null && nodeBorder.Background == GlobalValues.BRUSH_EMPTY))
-            {
-                Node clickedNode = FindNodeByNodeBorder(nodeBorder);
-                if (_selectedNode == null && clickedNode.TileOn != null)
-                {
-                    //_selectedTile = n.TileOn;
-                    _selectedNode = clickedNode;
-                    _selectedNode.TileOn.LastNode = clickedNode;
-                    _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_YELLOW;
-                }
-                else if (_selectedNode != null && clickedNode.TileOn == null)
-                {
-                    //n.TileOn = _selectedTile;
-                    if (_selectedNode.IsConneced(clickedNode))
-                    {
-                        clickedNode.TileOn = _selectedNode.TileOn;
-                        clickedNode.GraphicRepresentation.Background = clickedNode.TileOn.Graphic.Fill;
-                        _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
-                        //_selectedTile = null;
-                        _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
-                        _selectedNode.TileOn = null;
-                        _selectedNode = null;
-                        CheckAfterSet(clickedNode);
-                    }
+        //private void Walk(Border nodeBorder)
+        //{
 
-                }
+        //    if ((CheckTurn() == 1 && nodeBorder.Background == GlobalValues.BRUSH_WHITE)
+        //            || (CheckTurn() == 2 && nodeBorder.Background == GlobalValues.BRUSH_BLACK)
+        //            || (_selectedNode != null && nodeBorder.Background == GlobalValues.BRUSH_EMPTY))
+        //    {
+        //        Node clickedNode = FindNodeByNodeBorder(nodeBorder);
+        //        if (_selectedNode == null && clickedNode.TileOn != null)
+        //        {
+        //            //_selectedTile = n.TileOn;
+        //            _selectedNode = clickedNode;
+        //            _selectedNode.TileOn.LastNode = clickedNode;
+        //            _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_YELLOW;
+        //        }
+        //        else if (_selectedNode != null && clickedNode.TileOn == null)
+        //        {
+        //            //n.TileOn = _selectedTile;
+        //            if (_selectedNode.IsConneced(clickedNode))
+        //            {
+        //                clickedNode.TileOn = _selectedNode.TileOn;
+        //                clickedNode.GraphicRepresentation.Background = clickedNode.TileOn.Graphic.Fill;
+        //                _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
+        //                //_selectedTile = null;
+        //                _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+        //                _selectedNode.TileOn = null;
+        //                _selectedNode = null;
+        //                CheckAfterSet(clickedNode);
+        //            }
 
-                else if (_selectedNode == clickedNode)
-                {
-                    _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
-                    _selectedNode = null;
+        //        }
 
-                }
-            }
+        //        else if (_selectedNode == clickedNode)
+        //        {
+        //            _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+        //            _selectedNode = null;
 
-        }
+        //        }
+        //    }
 
-        private void Fly(Border nodeBorder)
-        {
-            if ((CheckTurn() == 1 && nodeBorder.Background == GlobalValues.BRUSH_WHITE)
-                    || (CheckTurn() == 2 && nodeBorder.Background == GlobalValues.BRUSH_BLACK)
-                    || (_selectedNode != null && nodeBorder.Background == GlobalValues.BRUSH_EMPTY))
-            {
-                Node clickedNode = FindNodeByNodeBorder(nodeBorder);
-                if (_selectedNode == null && clickedNode.TileOn != null)
-                {
-                    //_selectedTile = n.TileOn;
-                    _selectedNode = clickedNode;
-                    _selectedNode.TileOn.LastNode = clickedNode;
-                    _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_YELLOW;
-                }
-                else if (_selectedNode != null && clickedNode.TileOn == null)
-                {
-                    //n.TileOn = _selectedTile;
-                    if( CanFly() )
-                    {
-                        clickedNode.TileOn = _selectedNode.TileOn;
-                        clickedNode.GraphicRepresentation.Background = clickedNode.TileOn.Graphic.Fill;
-                        _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
-                        //_selectedTile = null;
-                        _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
-                        _selectedNode.TileOn = null;
-                        _selectedNode = null;
-                        CheckAfterSet(clickedNode);
-                    }
-                    else if (_selectedNode.IsConneced(clickedNode))
-                    {
-                        clickedNode.TileOn = _selectedNode.TileOn;
-                        clickedNode.GraphicRepresentation.Background = clickedNode.TileOn.Graphic.Fill;
-                        _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
-                        //_selectedTile = null;
-                        _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
-                        _selectedNode.TileOn = null;
-                        _selectedNode = null;
-                        CheckAfterSet(clickedNode);
-                    }
+        //}
 
-                }
+        //private void Fly(Border nodeBorder)
+        //{
+        //    // TODO: pick to GameController
+        //    if ((CheckTurn() == 1 && nodeBorder.Background == GlobalValues.BRUSH_WHITE)
+        //            || (CheckTurn() == 2 && nodeBorder.Background == GlobalValues.BRUSH_BLACK)
+        //            || (_selectedNode != null && nodeBorder.Background == GlobalValues.BRUSH_EMPTY))
+        //    {
+        //        Node clickedNode = FindNodeByNodeBorder(nodeBorder);
+        //        if (_selectedNode == null && clickedNode.TileOn != null)
+        //        {
+        //            //_selectedTile = n.TileOn;
+        //            _selectedNode = clickedNode;
+        //            _selectedNode.TileOn.LastNode = clickedNode;
+        //            _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_YELLOW;
+        //        }
+        //        else if (_selectedNode != null && clickedNode.TileOn == null)
+        //        {
+        //            //n.TileOn = _selectedTile;
+        //            if( CanFly() )
+        //            {
+        //                clickedNode.TileOn = _selectedNode.TileOn;
+        //                clickedNode.GraphicRepresentation.Background = clickedNode.TileOn.Graphic.Fill;
+        //                _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
+        //                //_selectedTile = null;
+        //                _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+        //                _selectedNode.TileOn = null;
+        //                _selectedNode = null;
+        //                CheckAfterSet(clickedNode);
+        //            }
+        //            else if (_selectedNode.IsConneced(clickedNode))
+        //            {
+        //                clickedNode.TileOn = _selectedNode.TileOn;
+        //                clickedNode.GraphicRepresentation.Background = clickedNode.TileOn.Graphic.Fill;
+        //                _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
+        //                //_selectedTile = null;
+        //                _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+        //                _selectedNode.TileOn = null;
+        //                _selectedNode = null;
+        //                CheckAfterSet(clickedNode);
+        //            }
 
-                else if (_selectedNode == clickedNode)
-                {
-                    _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
-                    _selectedNode = null;
+        //        }
 
-                }
-            }
-        }
+        //        else if (_selectedNode == clickedNode)
+        //        {
+        //            _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+        //            _selectedNode = null;
 
-        private bool CanFly()
-        {
-            if( CheckTurn() == 1 && _controller.GameStatus.PlayerTwoGoals.Count == 6)
-            {
-                return true;
-            }
-            else if (CheckTurn() == 2 && _controller.GameStatus.PlayerOneGoals.Count == 6)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+        //        }
+        //    }
+        //}
+
+        //private bool CanFly()
+        //{
+        //    if( CheckTurn() == 1 && _controller.GameStatus.PlayerTwoGoals.Count == 6)
+        //    {
+        //        return true;
+        //    }
+        //    else if (CheckTurn() == 2 && _controller.GameStatus.PlayerOneGoals.Count == 6)
+        //    {
+        //        return true;
+        //    }
+        //    else
+        //    {
+        //        return false;
+        //    }
             
-        }
+        //}
 
-        private void PerformNode(Border nodeGraphic)
-        {
-            Console.WriteLine(nodeGraphic.Background.ToString());
-        }
+        //private void PerformNode(Border nodeGraphic)
+        //{
+        //    Console.WriteLine(nodeGraphic.Background.ToString());
+        //}
 
 
 

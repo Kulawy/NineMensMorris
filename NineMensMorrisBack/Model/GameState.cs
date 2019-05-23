@@ -8,7 +8,7 @@ using static NineMensMorrisBack.Utils.CalculateRateHeuristics;
 
 namespace NineMensMorrisBack.Model
 {
-    public class GameState
+    public class GameState : ICloneable
     {
         public List<Tile> PlayerOneInitSet { get; set; }
         public List<Tile> PlayerTwoInitSet { get; set; }
@@ -20,7 +20,12 @@ namespace NineMensMorrisBack.Model
         public Player Turn { get; set; }
         private Random _rnd;
         public int Rate { get; set; }
+        public int IsMorrice { get; set; }
 
+        public Node FromNode { get; set; }
+        public Node DestinationNode{ get; set; }
+
+        public GameStage Stage { get; set; }
 
 
         public GameState()
@@ -28,6 +33,7 @@ namespace NineMensMorrisBack.Model
             _rnd = new Random();
             Board = new GameBoard();
             InitStarters();
+            IsMorrice = 0;
             
         }
 
@@ -62,13 +68,13 @@ namespace NineMensMorrisBack.Model
 
         
 
-        public int CalculateRate(CalculateRateHeuristic calc)
+        public int CalculateRateUsingPassedHeuristic(CalculateRateHeuristic calc)
         {
             Rate = calc(this);
             return 0;
         }
 
-        public int CheckState(int heuristicTypeNumber)
+        public int CalculateStateRate(int heuristicTypeNumber)
         {
             CalculateRateHeuristics calcRateObj = new CalculateRateHeuristics();
             CalculateRateHeuristic heuristicType;
@@ -77,10 +83,8 @@ namespace NineMensMorrisBack.Model
             else
                 heuristicType = new CalculateRateHeuristic(calcRateObj.FirstHeuristic);
 
-            CalculateRate(heuristicType);
-
-
-            return 0;
+            
+            return CalculateRateUsingPassedHeuristic(heuristicType);
         }
 
         public int CheckIfMorriceOnLastMove(Node node)
@@ -107,11 +111,36 @@ namespace NineMensMorrisBack.Model
             return isMorrice;
         }
 
+        private int CalculateRateUsingHeuristic1()
+        {
+            int val = 0;
+            if (Turn == Player.PlayerOne)
+            {
+                val = 2 * PlayerOneGoals.Count - 3 * PlayerTwoGoals.Count;
+            }
+            else if (Turn == Player.PlayerTwo)
+            {
+                val = 2 * PlayerTwoGoals.Count - 3 * PlayerOneGoals.Count;
+            }
+            return val;
+        }
+
+        private int CalculateRate()
+        {
+            if ( true )
+            {
+                return CalculateRateUsingHeuristic1();
+            }
+        }
+
+        public object Clone()
+        {
+            GameState newStatus = new GameState();
+            newStatus.Board = (GameBoard) this.Board.Clone();
 
 
-
-
-
+            return newStatus;
+        }
 
     }
 }

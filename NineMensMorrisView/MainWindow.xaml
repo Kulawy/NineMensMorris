@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NineMensMorrisView"
         mc:Ignorable="d"
-        Title="MainWindow" Height="640" Width="920" WindowStartupLocation="CenterScreen" Topmost="True">
+        Title="MainWindow" Height="640" Width="920" WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip">
     <Window.Icon>
         <BitmapImage UriSource="file:///C:/Users/Jakub/Desktop/CODES/dotNet/NineMensMorris/NineMensMorrisView/resources/morrice.png"/>
     </Window.Icon>

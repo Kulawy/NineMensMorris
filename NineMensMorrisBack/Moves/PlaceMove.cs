@@ -9,14 +9,21 @@ namespace NineMensMorrisBack.Moves
 {
     public class PlaceMove : IMove
     {
-        Node _pickedNode;
+        private Node _pickedNode;
+        private GameState _gameStatus;
+
+        public PlaceMove(GameState gameStatus, Node pickedNode)
+        {
+            _gameStatus = gameStatus;
+            _pickedNode = pickedNode;
+        }
 
         public bool IsLegal()
         {
             throw new NotImplementedException();
         }
 
-        public void MakeMove(GameState gameState)
+        public void MakeMove()
         {
             throw new NotImplementedException();
         }

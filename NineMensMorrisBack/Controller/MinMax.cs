@@ -12,21 +12,25 @@ namespace NineMensMorrisBack.Controller
     {
 
         private int _maxDepth;
+        private int _heuristicNumber;
         private double _bestVal;
         private Node _bestNode;
+        private GameLogic _gl;
 
-        public MinMax(int maxDepth)
+        public MinMax(int maxDepth, int heuristicNumber)
         {
             _maxDepth = maxDepth;
+            _heuristicNumber = heuristicNumber;
         }
         
         private double Minmax(GameState gameState, int depth, bool isMaximizingPlayer)
         {
             double value;
             double _bestVal;
-            //if ( depth == _maxDepth || DefineGameState(position) == GameStateEnum.GameOver )
+            
+            //if ( depth == _maxDepth || gameState.DefineGameState() == GameStateEnum.GameOver )
             //{
-            //    return CalculateState(position);
+            //    return gameState.CalculateState(_heuristicNumber);
             //}
 
             if (isMaximizingPlayer)
@@ -34,7 +38,10 @@ namespace NineMensMorrisBack.Controller
                 _bestVal = double.MinValue;
                 foreach( Node n in gameState.Board.Board)
                 {
-                    value = Minmax(gameState, depth + 1, false);
+                    GameState newGameState = (GameState) gameState.Clone();
+                    GameLogic _gl = new GameLogic(newGameState);
+                    _gl.TheGamePlay(n);
+                    value = Minmax(newGameState, depth + 1, false);
                     _bestVal = Max(_bestVal, value);
                 }
                 return _bestVal;
@@ -44,7 +51,10 @@ namespace NineMensMorrisBack.Controller
                 _bestVal = double.MaxValue;
                 foreach (Node n in gameState.Board.Board)
                 {
-                    value = Minmax(gameState, depth + 1, true);
+                    GameState newGameState = (GameState)gameState.Clone();
+                    GameLogic _gl = new GameLogic(newGameState);
+                    _gl.TheGamePlay(n);
+                    value = Minmax(newGameState, depth + 1, true);
                     _bestVal = Min(_bestVal, value);
                 }
                 return _bestVal;

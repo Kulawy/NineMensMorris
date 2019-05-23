@@ -71,8 +71,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controller\AlphaBeta.cs" />
-    <Compile Include="Controller\GameController.cs" />
+    <Compile Include="Controller\GameLogic.cs" />
     <Compile Include="Controller\MinMax.cs" />
+    <Compile Include="Controller\PlayerAI.cs" />
     <Compile Include="Model\Enums.cs" />
     <Compile Include="Model\Game.cs" />
     <Compile Include="Model\GameBoard.cs" />

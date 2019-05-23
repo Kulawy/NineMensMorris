@@ -9,12 +9,23 @@ namespace NineMensMorrisBack.Moves
 {
     public class SlideMove : IMove
     {
+        private GameState _gameStatus;
+        private Node _fromNode;
+        private Node _toNode;
+
+        public SlideMove(GameState gameStatus, Node fromNode, Node toNode)
+        {
+            _gameStatus = gameStatus;
+            _fromNode = fromNode;
+            _toNode = toNode;
+        }
+
         public bool IsLegal()
         {
             throw new NotImplementedException();
         }
 
-        public void MakeMove(GameState gameState)
+        public void MakeMove()
         {
             throw new NotImplementedException();
         }

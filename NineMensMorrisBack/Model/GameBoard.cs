@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NineMensMorrisBack.Model
 {
-    public class GameBoard
+    public class GameBoard : ICloneable
     {
         
         public HashSet<Node> Board { get; set; }
@@ -171,6 +171,13 @@ namespace NineMensMorrisBack.Model
             GetNode(4, 5).Right = GetNode(4, 6);
 
 
+        }
+
+        public object Clone()
+        {
+            GameBoard newBoard = new GameBoard();
+            newBoard.Board = new HashSet<Node>(this.Board);
+            return newBoard;
         }
 
         private void InitBoard()

@@ -10,14 +10,13 @@ namespace NineMensMorrisBack.Model
     public class Game: ReactiveObject
     {
         private string _winner = "";
-        private GameStateEnum _state;
+        private GameStage _state;
 
         private HashSet<Node> _tilesOnBoard;
 
         public Game()
         {
-            State = GameStateEnum.Placing;
-            CreateTiles();
+            State = GameStage.Placing;
 
         }
 
@@ -28,7 +27,7 @@ namespace NineMensMorrisBack.Model
         }
 
 
-        public GameStateEnum State
+        public GameStage State
         {
             get { return _state; }
             set { this.RaiseAndSetIfChanged(ref _state, value); }
@@ -39,21 +38,7 @@ namespace NineMensMorrisBack.Model
             get { return Winner; }
             set { this.RaiseAndSetIfChanged(ref _winner, value); }
         }
-
-        public void CreateTiles()
-        {
-            //TilesOnBoard = new HashSet<Node>(
-            //    new[]
-            //    {
-            //        //OUTER
-
-
-
-
-            //        });
-
-
-        }
+        
 
 
     }

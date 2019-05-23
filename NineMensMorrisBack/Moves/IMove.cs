@@ -9,8 +9,10 @@ namespace NineMensMorrisBack.Moves
 {
     public interface IMove
     {
+        
         bool IsLegal();
-        void MakeMove(GameState gameState);
+        void MakeMove();
+        //void MakeMove(GameState gameState);
 
     }
 }

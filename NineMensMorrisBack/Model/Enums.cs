@@ -16,14 +16,18 @@ namespace NineMensMorrisBack.Model
     public enum Player
     {
         PlayerOne,
-        PlayerTwo
+        PlayerTwo,
+        Empty
     }
 
-    public enum GameStateEnum
+    public enum GameStage
     {
         Placing,
-        Moving,
-        Flying,
+        PickMovingElement,
+        PickMovingDestination,
+        PickFlyElement,
+        PickFlyDestination,
+        Morrice,
         GameOver
     }
 

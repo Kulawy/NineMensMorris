@@ -10,14 +10,30 @@
 
     <Grid Background="#FF787370" HorizontalAlignment="Center" VerticalAlignment="Center">
         <Button Content="PLAY" HorizontalAlignment="Right" Margin="330,460,10,10" VerticalAlignment="Bottom" Width="130" Height="40" FontWeight="Bold" FontSize="20" Click="Button_Click"/>
-        <Label Content="Player 1 Type Choose:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="35" Width="180" FontWeight="Bold" FontSize="16"/>
+        <Label Content="Player 1 Type:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="35" Width="140" FontWeight="Bold" FontSize="16"/>
         <RadioButton GroupName="P1_Type" x:Name="P1_MinMax_RadioButton" Content="Min Max" HorizontalAlignment="Left" Margin="35,50,0,0" VerticalAlignment="Top" FontSize="14"/>
         <RadioButton GroupName="P1_Type" x:Name="P1_AlphaBeta_RadioButton" Content="Alpha Beta" HorizontalAlignment="Left" Margin="35,73,0,0" VerticalAlignment="Top" FontSize="14"/>
         <RadioButton GroupName="P1_Type" x:Name="P1_Manual_RadioButton" Content="Manual" HorizontalAlignment="Left" Margin="35,96,0,0" VerticalAlignment="Top" FontSize="14" IsChecked="True"/>
-        <Label Content="Player 2 Type Choose:" HorizontalAlignment="Left" Margin="10,215,0,0" VerticalAlignment="Top" Height="35" Width="180" FontWeight="Bold" FontSize="16"/>
+        <RadioButton GroupName="P1_RatioHeuristicType" x:Name="P1_CalculateHeuristic1_RadioButton" Content="HeuristicOne" HorizontalAlignment="Left" Margin="186,52,0,0" VerticalAlignment="Top" FontSize="14" IsChecked="True" />
+        <RadioButton GroupName="P1_RatioHeuristicType" x:Name="P1_CalculateHeuristic2_RadioButton" Content="HeuristicTwo" HorizontalAlignment="Left" Margin="186,70,0,0" VerticalAlignment="Top" FontSize="14"/>
+        <RadioButton GroupName="P1_RatioHeuristicType" x:Name="P1_CalculateHeuristic3_RadioButton" Content="HeuristicTree" HorizontalAlignment="Left" Margin="186,93,0,0" VerticalAlignment="Top" FontSize="14"/>
+
+        <Label Content="Player 2 Type:" HorizontalAlignment="Left" Margin="10,215,0,0" VerticalAlignment="Top" Height="35" Width="140" FontWeight="Bold" FontSize="16"/>
         <RadioButton GroupName="P2_Type" x:Name="P2_MinMax_RadioButton" Content="Min Max" HorizontalAlignment="Left" Margin="35,254,0,0" VerticalAlignment="Top" FontSize="14" />
         <RadioButton GroupName="P2_Type" x:Name="P2_AlphaBeta_RadioButton" Content="Alpha Beta" HorizontalAlignment="Left" Margin="35,277,0,0" VerticalAlignment="Top" FontSize="14"/>
         <RadioButton GroupName="P2_Type" x:Name="P2_Manual_RadioButton" Content="Manual" HorizontalAlignment="Left" Margin="35,295,0,0" VerticalAlignment="Top" FontSize="14" IsChecked="True"/>
+        <RadioButton GroupName="P2_RatioHeuristicType" x:Name="P2_CalculateHeuristic1_RadioButton" Content="HeuristicOne" HorizontalAlignment="Left" Margin="185,256,0,0" VerticalAlignment="Top" FontSize="14" IsChecked="True"/>
+        <RadioButton GroupName="P2_RatioHeuristicType" x:Name="P2_CalculateHeuristic2_RadioButton" Content="HeuristicTwo" HorizontalAlignment="Left" Margin="185,276,0,0" VerticalAlignment="Top" FontSize="14"/>
+        <RadioButton GroupName="P2_RatioHeuristicType" x:Name="P2_CalculateHeuristic3_RadioButton" Content="HeuristicTree" HorizontalAlignment="Left" Margin="185,299,0,0" VerticalAlignment="Top" FontSize="14" Height="15" Width="103"/>
+        <RadioButton GroupName="P1_GameHeuristicType" x:Name="P1_GameHeuristic1_RadioButton" Content="HeuristicOne" HorizontalAlignment="Left" Margin="343,51,0,0" VerticalAlignment="Top" FontSize="14" IsChecked="True" />
+        <RadioButton GroupName="P1_GameHeuristicType" x:Name="P1_GameHeuristic2_RadioButton" Content="HeuristicTwo" HorizontalAlignment="Left" Margin="343,69,0,0" VerticalAlignment="Top" FontSize="14"/>
+        <RadioButton GroupName="P1_GameHeuristicType" x:Name="P1_GameHeuristic3_RadioButton" Content="HeuristicTree" HorizontalAlignment="Left" Margin="343,92,0,0" VerticalAlignment="Top" FontSize="14"/>
+        <RadioButton GroupName="P2_GameHeuristicType" x:Name="P2_GameHeuristic1_RadioButton" Content="HeuristicOne" HorizontalAlignment="Left" Margin="342,255,0,0" VerticalAlignment="Top" FontSize="14" IsChecked="True"/>
+        <RadioButton GroupName="P2_GameHeuristicType" x:Name="P2_GameHeuristic2_RadioButton" Content="HeuristicTwo" HorizontalAlignment="Left" Margin="342,275,0,0" VerticalAlignment="Top" FontSize="14"/>
+        <RadioButton GroupName="P2_GameHeuristicType" x:Name="P2_GameHeuristic3_RadioButton" Content="HeuristicTree" HorizontalAlignment="Left" Margin="342,298,0,0" VerticalAlignment="Top" FontSize="14" Height="15" Width="103"/>
+        <Label Content="Ratio Count Heuristic:" HorizontalAlignment="Left" Margin="165,12,0,0" VerticalAlignment="Top" Height="25" Width="155" FontWeight="Bold" FontSize="14
+               "/>
+        <Label Content="Game Heuristic:" HorizontalAlignment="Left" Margin="325,12,-10,0" VerticalAlignment="Top" Height="25" Width="155" FontWeight="Bold" FontSize="14                "/>
 
 
     </Grid>
