@@ -124,6 +124,7 @@ namespace NineMensMorrisBack.Model
             }
             return val;
         }
+        
 
         private int CalculateRate()
         {

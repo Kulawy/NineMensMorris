@@ -32,6 +32,7 @@ namespace NineMensMorrisView
         
         private Random _rnd;
         private GameController _controller;
+        private Dictionary<string, int> _valuesContainer;
         //private Tile _selectedTile = null;
         //private Node _selectedNode = null;
         //private int _isMorrice = 0;
@@ -40,11 +41,10 @@ namespace NineMensMorrisView
         {
             InitializeComponent();
             _rnd = new Random();
-            
+            _valuesContainer = valuesContainer;
             _controller = new GameController(valuesContainer, SetIconsToMap());
             SetUpTilesToController();
             SetUpNodeGraphicToController();
-            DataContextBinding();
             _controller.UpdateGraphicTurnController();
         }
 
@@ -58,11 +58,6 @@ namespace NineMensMorrisView
             return shapes;
         }
 
-        private void DataContextBinding()
-        {
-            FieldA1_Border.DataContext = _controller.PresentGameState.Board.Board.ElementAt(0);
-        }
-        
 
         //public int CheckTurn()
         //{
@@ -612,5 +607,32 @@ namespace NineMensMorrisView
         }
         #endregion
 
+        private void MoveTurnR_Rectangle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if ((_controller.PresentGameState.Turn == Player.PlayerOne && _valuesContainer["Player1Type"] != 2) || (_controller.PresentGameState.Turn == Player.PlayerTwo && _valuesContainer["Player2Type"] != 2))
+            {
+                _controller.AutoMove();
+            }
+        }
+
+        private void MoveTurnL_Rectangle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if ((_controller.PresentGameState.Turn == Player.PlayerOne && _valuesContainer["Player1Type"] != 2) || (_controller.PresentGameState.Turn == Player.PlayerTwo && _valuesContainer["Player2Type"] != 2))
+            {
+                _controller.AutoMove();
+            }
+        }
+        
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Add)
+            {
+                if ((_controller.PresentGameState.Turn == Player.PlayerOne && _valuesContainer["Player1Type"] != 2) || (_controller.PresentGameState.Turn == Player.PlayerTwo && _valuesContainer["Player2Type"] != 2))
+                {
+                    _controller.AutoMove();
+                }
+                e.Handled = true;
+            }
+        }
     }
 }

@@ -10,6 +10,7 @@ using System.Windows.Shapes;
 using System.Windows.Navigation;
 using NineMensMorrisView;
 using System.Windows;
+using System.Threading;
 
 namespace NineMensMorrisBack.Controller
 {
@@ -17,6 +18,11 @@ namespace NineMensMorrisBack.Controller
     {
         private Random _rnd;
         public GameState PresentGameState;
+
+        private int _player1MoveCounter;
+        private int _player2MoveCounter;
+        private double _player1TimeCounter;
+        private double _player2TimeCounter;
 
         private int _player1Type;
         private int _player2Type;
@@ -27,7 +33,7 @@ namespace NineMensMorrisBack.Controller
         private int _player1GameHeuristicType;
         private int _player2GameHeuristicType;
 
-        private GameStage Stage;
+        //private GameStage _stage;
 
         private Node _selectedNode = null;
         private Rectangle _moveTurnL_Rectangle;
@@ -40,7 +46,12 @@ namespace NineMensMorrisBack.Controller
 
         public GameController(Dictionary<string, int> valuesContainer, Dictionary<String, Object> graphicIcons)
         {
+
             _rnd = new Random();
+            _player1MoveCounter = 0;
+            _player2MoveCounter = 0;
+            _player1TimeCounter = 0;
+            _player2TimeCounter = 0;
 
             _player1Type = valuesContainer["Player1Type"];
             _player2Type = valuesContainer["Player2Type"];
@@ -63,7 +74,7 @@ namespace NineMensMorrisBack.Controller
         public void TheGamePlay(Node choosenNode)
         {
 
-            if (PresentGameState.Stage == GameStage.Morrice)
+            if (PresentGameState.Stage == GameStage.Morrice )
             {
                 if ( choosenNode.TileOn != null &&  choosenNode.TileOn.Owner != PresentGameState.Turn)
                 {
@@ -86,8 +97,9 @@ namespace NineMensMorrisBack.Controller
             {
                 FlyController(choosenNode);
             }
-            AutoMove();
+            MeasureTournament();
             CheckStage();
+            AutoMove();
             
         }
 
@@ -117,20 +129,47 @@ namespace NineMensMorrisBack.Controller
             {
                 FlyController(choosenNode);
             }
-            AutoMove();
             CheckStage();
+            //AutoMove();
+            
 
         }
 
-        private void AutoMove()
+        public void AutoMove()
         {
             if ( (PresentGameState.Turn == Player.PlayerOne && _player1Type != 2) || (PresentGameState.Turn == Player.PlayerTwo && _player2Type != 2))
             {
                 List<Node> possibleNodes = GetPossibleMoves(PresentGameState.Turn);
-                TheGamePlay(possibleNodes[_rnd.Next(possibleNodes.Count)]);
 
+                //Thread.Sleep(1000);
+                //_gamePage.UpdateLayout();
+                //((MainWindow)System.Windows.Application.Current.MainWindow).UpdateLayout();
+                
+                Console.WriteLine( _player1MoveCounter + "\n" + _player2MoveCounter + "\n");
+                while (possibleNodes.Count == 0 && _selectedNode != null)
+                {
+                    _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+                    _selectedNode = null;
+                    CheckStage();
+                    possibleNodes = GetPossibleMoves(PresentGameState.Turn);
+                }
+                TheGamePlay(possibleNodes[_rnd.Next(possibleNodes.Count)]);
+                
             }
 
+        }
+
+
+        private void MeasureTournament()
+        {
+            if (PresentGameState.Turn == Player.PlayerOne)
+            {
+                _player1MoveCounter++;
+            }
+            else
+            {
+                _player2MoveCounter++;
+            }
         }
 
         private void ChangeStateAfterMove()
@@ -246,22 +285,96 @@ namespace NineMensMorrisBack.Controller
             }
         }
 
-        private void PickTileToFly(Node choosenNode)
+        #region Walk
+
+        private void PickTileToWalkOnlyForAuto(Node choosenNode)
         {
+            _selectedNode = choosenNode;
+            _selectedNode.TileOn.LastNode = choosenNode;
+            _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_YELLOW;
+        }
+
+        private void PickTileToDestinationOnlyForAuto(Node choosenNode)
+        {
+            choosenNode.TileOn = _selectedNode.TileOn;
+            choosenNode.GraphicRepresentation.Background = choosenNode.TileOn.Graphic.Fill;
+            _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
+            _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+            _selectedNode.TileOn = null;
+            _selectedNode = null;
+            CheckAfterSet(choosenNode);
+        }
+
+        private void WalkController(Node choosenNode)
+        {
+
+            if ((PresentGameState.Turn == Player.PlayerOne && choosenNode.GraphicRepresentation.Background == GlobalValues.BRUSH_WHITE)
+                    || (PresentGameState.Turn == Player.PlayerTwo && choosenNode.GraphicRepresentation.Background == GlobalValues.BRUSH_BLACK)
+                    || (_selectedNode != null && choosenNode.GraphicRepresentation.Background == GlobalValues.BRUSH_EMPTY))
+            {
+
+                if (_selectedNode == null && choosenNode.TileOn != null)
+                {
+                    //_selectedTile = n.TileOn;
+                    _selectedNode = choosenNode;
+                    _selectedNode.TileOn.LastNode = choosenNode;
+                    _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_YELLOW;
+                }
+                else if (_selectedNode != null && choosenNode.TileOn == null)
+                {
+                    //n.TileOn = _selectedTile;
+                    if (_selectedNode.IsConneced(choosenNode))
+                    {
+                        choosenNode.TileOn = _selectedNode.TileOn;
+                        choosenNode.GraphicRepresentation.Background = choosenNode.TileOn.Graphic.Fill;
+                        _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
+                        //_selectedTile = null;
+                        _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+                        _selectedNode.TileOn = null;
+                        _selectedNode = null;
+                        CheckAfterSet(choosenNode);
+                    }
+
+                }
+
+                else if (_selectedNode == choosenNode)
+                {
+                    _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+                    _selectedNode = null;
+
+                }
+
+            }
 
         }
 
-        private void PickDestinationToFly(Node choosenNode)
-        {
+        #endregion
 
+        #region Fly
+        private void PickTileToFlyOnlyForAuto(Node choosenNode)
+        {
+            _selectedNode = choosenNode;
+            _selectedNode.TileOn.LastNode = choosenNode;
+            _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_YELLOW;
+        }
+
+        private void PickDestinationToFlyOnlyForAuto(Node choosenNode)
+        {
+            choosenNode.TileOn = _selectedNode.TileOn;
+            choosenNode.GraphicRepresentation.Background = choosenNode.TileOn.Graphic.Fill;
+            _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
+            _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
+            _selectedNode.TileOn = null;
+            _selectedNode = null;
+            CheckAfterSet(choosenNode);
         }
 
 
         private void FlyController(Node choosenNode)
         {
-            if ((PresentGameState.Turn == Player.PlayerOne && choosenNode.TileOn.Owner == Player.PlayerOne)
-                    || (PresentGameState.Turn == Player.PlayerTwo && choosenNode.TileOn.Owner == Player.PlayerTwo)
-                    || (_selectedNode != null && choosenNode.TileOn.Owner == Player.Empty))
+            if ((_selectedNode != null && choosenNode.TileOn == null)
+                    ||(PresentGameState.Turn == Player.PlayerOne && choosenNode.TileOn.Owner == Player.PlayerOne)
+                    || (PresentGameState.Turn == Player.PlayerTwo && choosenNode.TileOn.Owner == Player.PlayerTwo))
             {
                 if (_selectedNode == null && choosenNode.TileOn != null)
                 {
@@ -303,52 +416,13 @@ namespace NineMensMorrisBack.Controller
             }
         }
 
-        private void WalkController(Node choosenNode)
-        {
+        #endregion
 
-            if (( PresentGameState.Turn == Player.PlayerOne && choosenNode.GraphicRepresentation.Background == GlobalValues.BRUSH_WHITE)
-                    || ( PresentGameState.Turn == Player.PlayerTwo && choosenNode.GraphicRepresentation.Background == GlobalValues.BRUSH_BLACK)
-                    || (_selectedNode != null && choosenNode.GraphicRepresentation.Background == GlobalValues.BRUSH_EMPTY))
-            {
-
-                if (_selectedNode == null && choosenNode.TileOn != null)
-                {
-                    //_selectedTile = n.TileOn;
-                    _selectedNode = choosenNode;
-                    _selectedNode.TileOn.LastNode = choosenNode;
-                    _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_YELLOW;
-                }
-                else if (_selectedNode != null && choosenNode.TileOn == null)
-                {
-                    //n.TileOn = _selectedTile;
-                    if (_selectedNode.IsConneced(choosenNode))
-                    {
-                        choosenNode.TileOn = _selectedNode.TileOn;
-                        choosenNode.GraphicRepresentation.Background = choosenNode.TileOn.Graphic.Fill;
-                        _selectedNode.GraphicRepresentation.Background = GlobalValues.BRUSH_EMPTY;
-                        //_selectedTile = null;
-                        _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
-                        _selectedNode.TileOn = null;
-                        _selectedNode = null;
-                        CheckAfterSet(choosenNode);
-                    }
-
-                }
-
-                else if (_selectedNode == choosenNode)
-                {
-                    _selectedNode.GraphicRepresentation.BorderBrush = GlobalValues.BRUSH_TRANSPARENT;
-                    _selectedNode = null;
-
-                }
-                
-            }
-
-        }
+        
 
         private void CheckStage()
         {
-            if (PresentGameState.IsMorrice > 0 )
+            if ( PresentGameState.IsMorrice > 0 )
             {
                 PresentGameState.Stage = GameStage.Morrice;
             }
@@ -374,11 +448,31 @@ namespace NineMensMorrisBack.Controller
                 {
                     PresentGameState.Stage = GameStage.PickFlyDestination;
                 }
+                
 
             }
             else if ( PresentGameState.Turn == Player.PlayerTwo)
             {
-
+                if (PresentGameState.PlayerTwoInitSet.Count > 0)
+                {
+                    PresentGameState.Stage = GameStage.Placing;
+                }
+                else if (PresentGameState.PlayerOneGoals.Count < 6 && _selectedNode == null)
+                {
+                    PresentGameState.Stage = GameStage.PickMovingElement;
+                }
+                else if (PresentGameState.PlayerOneGoals.Count < 6 && _selectedNode != null)
+                {
+                    PresentGameState.Stage = GameStage.PickMovingDestination;
+                }
+                else if (_selectedNode == null)
+                {
+                    PresentGameState.Stage = GameStage.PickFlyElement;
+                }
+                else if (_selectedNode != null)
+                {
+                    PresentGameState.Stage = GameStage.PickFlyDestination;
+                }
             }
         }
 
@@ -407,7 +501,6 @@ namespace NineMensMorrisBack.Controller
 
         private void CheckAfterSet(Node node)
         {
-
             PresentGameState.IsMorrice = PresentGameState.CheckIfMorriceOnLastMove(node);
 
             if (PresentGameState.IsMorrice <= 0)
@@ -460,7 +553,17 @@ namespace NineMensMorrisBack.Controller
         private List<Node> GetPossibleMoves(Player player)
         {
             List<Node> possibleNodes = new List<Node>();
-            if ( PresentGameState.Stage == GameStage.Placing)
+            if( PresentGameState.Stage == GameStage.Morrice)
+            {
+                foreach (Node n in PresentGameState.Board.Board)
+                {
+                    if (n.TileOn != null && n.TileOn.Owner == OpisitePlayer())
+                    {
+                        possibleNodes.Add(n);
+                    }
+                }
+            }
+            else if ( PresentGameState.Stage == GameStage.Placing)
             {
                 foreach(Node n in PresentGameState.Board.Board)
                 {
@@ -474,7 +577,7 @@ namespace NineMensMorrisBack.Controller
             {
                 foreach (Node n in PresentGameState.Board.Board)
                 {
-                    if (n.TileOn.Owner == player)
+                    if (n.TileOn != null && n.TileOn.Owner == player)
                     {
                         possibleNodes.Add(n);
                     }
@@ -494,7 +597,7 @@ namespace NineMensMorrisBack.Controller
             {
                 foreach (Node n in PresentGameState.Board.Board)
                 {
-                    if (n.TileOn.Owner == player)
+                    if (n.TileOn != null &&  n.TileOn.Owner == player)
                     {
                         possibleNodes.Add(n);
                     }
@@ -514,5 +617,24 @@ namespace NineMensMorrisBack.Controller
 
             return possibleNodes;
         }
+
+        private Player OpisitePlayer()
+        {
+            if ( PresentGameState.Turn == Player.PlayerOne){
+                return Player.PlayerTwo;
+            }
+            else if (PresentGameState.Turn == Player.PlayerTwo)
+            {
+                return Player.PlayerOne;
+            }
+            else
+            {
+                return Player.Empty;
+            }
+
+
+        }
+        
+
     }
 }
